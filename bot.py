@@ -8,7 +8,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMa
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
 import os
 from datetime import datetime
-from weatherFuncts import findLatLon, checkNewData, getMinutely, evalMinutely, plotMinutelyPrec, doRainMins
+from weatherFunctsOld import findLatLon, checkNewData, getMinutely, evalMinutely, plotMinutelyPrec, doRainMins
 PORT = int(os.environ.get('PORT', 5000))
 
 WECHSLER, EINGABE, AUSWAHL, AUSWAHLWECHSLER, STANDORT = range(5)
@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
-TOKEN = ''
+TOKEN = os.environ["TELTOKEN"]
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.

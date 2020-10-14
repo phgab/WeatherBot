@@ -49,7 +49,7 @@ def checkNewData(coord):
 
 
 def getNewData(coord):
-    api_key = ""
+    api_key = os.environ["OWMAPI"]  # added through heroku config:add TOKEN=…
     # oneCall API
     base_url = "https://api.openweathermap.org/data/2.5/onecall?lat="
     lat = coord["lat"]
