@@ -1,0 +1,6 @@
+python-telegram-bot==12.7
+requests
+urllib3
+matplotlib
+pickle-mixin
+telepot
