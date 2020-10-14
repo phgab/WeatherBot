@@ -14,6 +14,8 @@ def returnWeatherInfo(requestData):
     returnVal = checkNewData(coord)
     return returnVal
 
+# TODO: create new bot and pull the old testbot files from repo
+
 
 
 
