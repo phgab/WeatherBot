@@ -49,7 +49,7 @@ def checkNewData(coord):
 
 
 def getNewData(coord):
-    api_key = "72693a34187d8a5ddce960409058d163"
+    api_key = ""
     # oneCall API
     base_url = "https://api.openweathermap.org/data/2.5/onecall?lat="
     lat = coord["lat"]
