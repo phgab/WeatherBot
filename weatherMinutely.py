@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 
 
 
-def doRainMins(coord, fileName):
-    [data, returnVal] = checkNewData(coord)
-    minutely = getMinutely(data["minutely"])
-    returnStr = evalMinutely(minutely)
-    plotMinutelyPrec(minutely, fileName)
-    return returnStr
+# def doRainMins(coord, fileName):
+#     [data, returnVal] = checkNewData(coord)
+#     minutely = getMinutely(data["minutely"])
+#     returnStr = evalMinutely(minutely)
+#     plotMinutelyPrec(minutely, fileName)
+#     return returnStr
 
 
 def plotMinutelyPrec(minutely, fileName):

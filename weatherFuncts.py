@@ -1,4 +1,4 @@
-import weatherReader
+from weatherReader import findLatLon, checkNewData
 import weatherMinutely
 import weatherHourly
 
