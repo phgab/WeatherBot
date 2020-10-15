@@ -339,7 +339,7 @@ def main():
     updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
                           url_path=TOKEN)
-    updater.bot.setWebhook('https://gbtelbottest.herokuapp.com/' + TOKEN)
+    updater.bot.setWebhook('https://gbweatherbot.herokuapp.com/' + TOKEN)
     
     updater.bot.sendMessage(532298931,"Bot running")
     
