@@ -1,13 +1,15 @@
 import matplotlib.pyplot as plt
+import time
 
 
 
-# def doRainMins(coord, fileName):
-#     [data, returnVal] = checkNewData(coord)
-#     minutely = getMinutely(data["minutely"])
-#     returnStr = evalMinutely(minutely)
-#     plotMinutelyPrec(minutely, fileName)
-#     return returnStr
+def minutely(minData):
+    minutely = getMinutely(minData)
+    returnStr = evalMinutely(minutely)
+    hour, min = map(int, time.strftime("%H %M").split())
+    fileName = "min_" + str(hour) + "_" + str(min)
+    plotMinutelyPrec(minutely, fileName)
+    return fileName, returnStr
 
 
 def plotMinutelyPrec(minutely, fileName):
@@ -36,22 +38,23 @@ def plotMinutelyPrec(minutely, fileName):
 def evalMinutely(minutely):
     prec = minutely[1]
     mins = range(61)
-    returnStr = ""
+    rainStr = ""
+    bikeStr = ""
     searchMin = True
 
     if max(prec) == 0:
-        returnStr += "Kein Regen in der nächsten Stunde."
+        rainStr += "Kein Regen in der nächsten Stunde."
         searchMin = False
     elif max(prec) < 0.5:
-        returnStr += "Nur leichter Regen."
+        rainStr += "Nur leichter Regen."
     elif 4 < min(prec):
-        returnStr += "Es regnet die ganze nächste Stunde stark!"
+        rainStr += "Es regnet die ganze nächste Stunde stark!"
     elif 1 < min(prec):
-        returnStr += "Es regnet die ganze nächste Stunde."
+        rainStr += "Es regnet die ganze nächste Stunde."
         if 4 < max(prec):
-            returnStr += " Zwischendurch stark."
+            rainStr += " Zwischendurch stark."
     else:
-        returnStr += "Wechselhafter Regen in der nächsten Stunde."
+        rainStr += "Wechselhafter Regen in der nächsten Stunde."
 
     if searchMin:
         commuteTime = 20
@@ -100,22 +103,22 @@ def evalMinutely(minutely):
                     break
 
         print(len(minRecommended))
-        returnStr += "\n"
+
         if 1 < len(minRecommended):
-            returnStr += "Die besten Startzeiten sind "
+            bikeStr += "Die besten Startzeiten sind "
         else:
-            returnStr += "Die beste Startzeit ist "
+            bikeStr += "Die beste Startzeit ist "
 
         for idx in range(len(minRecommended)):
             if 0 < idx:
-                returnStr += " oder "
+                bikeStr += " oder "
             if len(minRecommended[idx]) == 1:
-                returnStr += "in " + str(indices[minRecommended[idx][0]]) + " Minuten"
+                bikeStr += "in " + str(indices[minRecommended[idx][0]]) + " Minuten"
             else:
-                returnStr += "in " + str(indices[minRecommended[idx][0]]) + \
+                bikeStr += "in " + str(indices[minRecommended[idx][0]]) + \
                              " - " + str(indices[minRecommended[idx][1]]) + " Minuten"
-    print(returnStr)
-    return returnStr
+    print(bikeStr)
+    return rainStr, bikeStr
 
 
 def getMinutely(minData):

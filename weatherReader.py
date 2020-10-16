@@ -5,19 +5,40 @@ import requests
 import urllib.parse
 
 
+def returnWeatherInfo(requestData):
+    errorCode = 0
+    if "coord" in requestData:
+        coord = requestData["coord"]
+    elif "address" in requestData:
+        coord = findLatLon(requestData["address"])
+        if coord == -1:
+            errorCode = -1  # No coordinates found
+    else:
+        print("No location given")
+        errorCode = -2
+
+    if 0 <= errorCode:
+        weatherData, updateVal = checkNewData(coord)
+        return [weatherData, errorCode]
+    else:
+        return [0, errorCode]
+
 
 def findLatLon(address):
     url = 'https://nominatim.openstreetmap.org/search/' + \
           urllib.parse.quote(address) + '?format=json'
 
     response = requests.get(url).json()
-    lat = response[0]["lat"]
-    lon = response[0]["lon"]
-    coord = {
-        "lat": lat,
-        "lon": lon
-    }
-    return coord
+    if "lat" in response:
+        lat = response[0]["lat"]
+        lon = response[0]["lon"]
+        coord = {
+            "lat": lat,
+            "lon": lon
+        }
+        return coord
+    else:
+        return -1
 
 
 
