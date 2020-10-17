@@ -29,7 +29,7 @@ def findLatLon(address):
           urllib.parse.quote(address) + '?format=json'
 
     response = requests.get(url).json()
-    if "lat" in response:
+    if "lat" in response[0]:
         lat = response[0]["lat"]
         lon = response[0]["lon"]
         coord = {
