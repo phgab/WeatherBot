@@ -3,7 +3,7 @@ from weatherMinutely import minutely
 import weatherHourly
 
 def returnMinutely(requestData):
-    weatherData, errorCode = returnWeatherInfo(requestData)
+    weatherData, loc, errorCode = returnWeatherInfo(requestData)
     if 0 <= errorCode:
         fileName, returnStr = minutely(weatherData["minutely"])
         return returnStr, fileName, errorCode

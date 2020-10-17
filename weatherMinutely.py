@@ -3,16 +3,16 @@ import time
 
 
 
-def minutely(minData):
+def minutely(minData,loc):
     minutely = getMinutely(minData)
     returnStr = evalMinutely(minutely)
     hour, min = map(int, time.strftime("%H %M").split())
     fileName = "min_" + str(hour) + "_" + str(min)
-    plotMinutelyPrec(minutely, fileName)
+    plotMinutelyPrec(minutely, fileName, loc)
     return fileName, returnStr
 
 
-def plotMinutelyPrec(minutely, fileName):
+def plotMinutelyPrec(minutely, fileName, plotTitle):
     dt = minutely[0]
     prec = minutely[1]
     dt_zero = [t - dt[0] for t in dt]
@@ -26,6 +26,7 @@ def plotMinutelyPrec(minutely, fileName):
     plt.yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
     if max(prec) < 10:
         plt.ylim(0, 10)
+    plt.title(plotTitle)
 
     plt.show(block=False)
     print(max(prec))

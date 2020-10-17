@@ -9,6 +9,7 @@ def returnWeatherInfo(requestData):
     errorCode = 0
     if "coord" in requestData:
         coord = requestData["coord"]
+        coord = findLocCoord(coord)
     elif "address" in requestData:
         coord = findLatLon(requestData["address"])
         if coord == -1:
@@ -19,9 +20,9 @@ def returnWeatherInfo(requestData):
 
     if 0 <= errorCode:
         weatherData, updateVal = checkNewData(coord)
-        return [weatherData, errorCode]
+        return [weatherData, coord["loc"], errorCode]
     else:
-        return [0, errorCode]
+        return [0, "", errorCode]
 
 
 def findLatLon(address):
@@ -32,13 +33,29 @@ def findLatLon(address):
     if "lat" in response[0]:
         lat = response[0]["lat"]
         lon = response[0]["lon"]
+        loc = response[0]["display_name"]
         coord = {
             "lat": lat,
-            "lon": lon
+            "lon": lon,
+            "loc": loc
         }
         return coord
     else:
         return -1
+
+def findLocCoord(coord):
+    lat = coord["lat"]
+    lon = coord["lon"]
+    url = 'https://nominatim.openstreetmap.org/search/' + \
+          urllib.parse.quote(str(lat)+","+str(lon)) + '?format=json'
+
+    response = requests.get(url).json()
+    if "lat" in response[0]:
+        loc = response[0]["display_name"]
+        coord["loc"] = loc
+    else:
+        coord["loc"] = "No location found"
+    return coord
 
 
 
