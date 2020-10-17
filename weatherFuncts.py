@@ -6,6 +6,7 @@ def returnMinutely(requestData):
     weatherData, loc, errorCode = returnWeatherInfo(requestData)
     if 0 <= errorCode:
         fileName, returnStr = minutely(weatherData["minutely"],loc)
+        returnStr += loc
         return returnStr, fileName, errorCode
     else:
         return "", "", errorCode
