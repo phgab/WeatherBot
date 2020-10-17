@@ -9,6 +9,8 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 import os
 from datetime import datetime
 from weatherFunctsOld import findLatLon, checkNewData, getMinutely, evalMinutely, plotMinutelyPrec, doRainMins
+from convHandlerBike import getConvHandlerBike
+
 PORT = int(os.environ.get('PORT', 5000))
 
 WECHSLER, EINGABE, AUSWAHL, AUSWAHLWECHSLER, STANDORT = range(5)
@@ -229,33 +231,7 @@ def cancel(update, context):
  
     return ConversationHandler.END
 
-def bikeStart(update, context):
-    bot = context.bot
-    
-    keyboard = [[InlineKeyboardButton("Zuhause", callback_data="1")],\
-                [InlineKeyboardButton("MHH",callback_data="2")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Von wo möchtest du fahren?', reply_markup=reply_markup)
-    
-    return FIRST
-    
-def bikeEval(update, context):
-    query = update.callback_query
-    query.answer()
-    bot = query.bot
-    qData = query.data
-    adID = int(qData)
-    if adID == 1:
-        address = 'Kriegerstrasse 22, 30161 Hannover'
-    elif adID == 2:
-        address = 'Stadtfelddamm 34, 30625 Hannover'
-    coord = findLatLon(address)
-    
-    fileName = "bikeLoc"
-    returnStr = doRainMins(coord,fileName)
-    bot.send_photo(query.message.chat.id,open(fileName + ".jpg",'rb'))
-    bot.sendMessage(query.message.chat.id,returnStr)
-    return ConversationHandler.END
+
 
 
 def main():
@@ -317,17 +293,9 @@ def main():
             fallbacks=[CommandHandler('cancel', cancel)]
             )
     dp.add_handler(convHandlerWeather)
-    
-    convHandlerBike = ConversationHandler(
-        entry_points=[CommandHandler("fahrrad",bikeStart)],
-        states={
-            FIRST: [CallbackQueryHandler(bikeEval)
-                ],
-            },
-        fallbacks=[CommandHandler('cancel', cancel)]
-    )
-    
-    dp.add_handler(convHandlerBike) 
+
+    # TODO: get the conversationhandler here
+    dp.add_handler(getConvHandlerBike())
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
