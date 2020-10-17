@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from weatherFunctsOld import findLatLon, checkNewData, getMinutely, evalMinutely, plotMinutelyPrec, doRainMins
 from convHandlerBike import getConvHandlerBike
+from convHandlerWeather import getConvHandlerWeather
 
 PORT = int(os.environ.get('PORT', 5000))
 
@@ -52,25 +53,7 @@ def photo(update, context):
     bot.send_photo(update.message.chat.id,open("img.jpg",'rb'))
     #bot.send_photo(update.message.chat.id,"https://homepages.cae.wisc.edu/~ece533/images/airplane.png")
 
-def rainForecastVar(update, context):
-    bot = context.bot
-    
-    keyboard = [[InlineKeyboardButton("Adresse eingeben", callback_data=str(ENTERLOC))],\
-                [InlineKeyboardButton("Auswahl",callback_data=str(FIXEDLOC))],\
-                [InlineKeyboardButton("Eigener Standort",callback_data=str(USERLOC))]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Bitte wählen:', reply_markup=reply_markup)
-    
-    #reply_keyboard = [['Adresse eingeben', 'Auswahl', 'Eigener Standort']]
-    #update.message.reply_text(
-    #    'Bitte wähle aus den folgenden Optionen:',
-    #    reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-    
-    #keyboard2 = [[KeyboardButton("share"),request_location=True]]
-    #reply_markup2 = ReplyKeyboardMarkup(keyboard)
-    #update.message.reply_text('share', reply_markup=reply_markup2)
-    
-    return FIRST
+
 
 def rainForecast(update, context): #, location, fileName
     bot = context.bot
@@ -131,89 +114,8 @@ def switchAnswer(update, context):
     else:
         return -1
     
-def enterLoc(update, context):
-    query = update.callback_query
-    query.answer()
-    query.edit_message_text(text="Bitte die Adresse inkl. PLZ und Ort senden.")
-    #update.message.reply_text("Not implemented yet")
-    return SECOND
-    
-def fixedLoc(update, context):
-    query = update.callback_query
-    query.answer()
-    keyboard = [[InlineKeyboardButton(fixedAdr[0][0], callback_data="0")],\
-                [InlineKeyboardButton(fixedAdr[1][0],callback_data="1")],\
-                [InlineKeyboardButton(fixedAdr[2][0],callback_data="2")],\
-                [InlineKeyboardButton(fixedAdr[3][0],callback_data="3")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    query.edit_message_text(text="Welche Adresse?:", reply_markup=reply_markup)
-    #update.message.reply_text('Welche Adresse?:', reply_markup=reply_markup)
-    return SECOND
-    
-def userLoc(update, context):
-    query = update.callback_query
-    query.answer()
-    query.edit_message_text(text="send loc plz")
-    if False:
-        user_location = update.message.location
-        lat = user_location.latitude
-        lon = user_location.longitude
-        coord = [lat,lon]
-        query.edit_message_text(text="lat="+str(lat)+" lon="+str(lon))
-    return SECOND
 
-def readLoc(update, context):
-    
-    bot = context.bot
-    bot.sendMessage(532298931,"loc")
-    user_location = update.message.location
-    lat = user_location.latitude
-    lon = user_location.longitude
-    coord = {"lat":lat,"lon":lon}
-    global coordBuffer
-    coordBuffer = coord
-    bot.sendMessage(532298931,"lat="+str(lat)+" lon="+str(lon))
-    
-    fileName = "userLoc"
-    returnStr = doRainMins(coord,fileName)
-    bot.sendMessage(532298931,returnStr)
-    bot.send_photo(update.message.chat.id,open(fileName + ".jpg",'rb'))
-    update.message.reply_text(returnStr)
-    
-    return ConversationHandler.END
-    
-def readAddress(update, context):
-    bot = context.bot
-    address = update.message.text
-    update.message.reply_text(address)
-    coord = findLatLon(address)
-    global coordBuffer
-    coordBuffer = coord
-    bot.sendMessage(532298931,"found it") 
-    bot.sendMessage(532298931,"lat="+str(coord["lat"])+" lon="+str(coord["lon"]))
-    
-    fileName = "customLoc"
-    returnStr = doRainMins(coord,fileName)
-    bot.send_photo(update.message.chat.id,open(fileName + ".jpg",'rb'))
-    update.message.reply_text(returnStr)
-    
-    return ConversationHandler.END
-    
-def evalSelectedAddress(update, context):
-    query = update.callback_query
-    query.answer()
-    bot = query.bot
-    qData = query.data
-    adID = int(qData)
-    address = fixedAdr[adID][0] + fixedAdr[adID][1]
-    coord = findLatLon(address)
-    
-    fileName = "chosenLoc"
-    returnStr = doRainMins(coord,fileName)
-    bot.send_photo(query.message.chat.id,open(fileName + ".jpg",'rb'))
-    bot.sendMessage(query.message.chat.id,returnStr)
-    return ConversationHandler.END
-    
+
 def sendPickle(update, context):
     
     if os.path.isfile("weatherData"):
@@ -256,20 +158,7 @@ def main():
     dp.add_handler(CommandHandler("sendPickle", sendPickle))
     
     # New weather conversation handler
-    convHandlerWeather = ConversationHandler(
-        entry_points=[CommandHandler("wetter",rainForecastVar)],
-        states={
-            FIRST: [CallbackQueryHandler(enterLoc, pattern='^' + str(ENTERLOC) + '$'),
-                    CallbackQueryHandler(fixedLoc, pattern='^' + str(FIXEDLOC) + '$'),
-                    CallbackQueryHandler(userLoc, pattern='^' + str(USERLOC) + '$')
-                ],
-            SECOND: [MessageHandler(Filters.location,readLoc),
-                     MessageHandler(Filters.text,readAddress),
-                     CallbackQueryHandler(evalSelectedAddress)
-                ],
-            },
-        fallbacks=[CommandHandler('cancel', cancel)]
-    )
+
     
     #updater.dispatcher.add_handler(CallbackQueryHandler(button))
     
@@ -292,7 +181,8 @@ def main():
             
             fallbacks=[CommandHandler('cancel', cancel)]
             )
-    dp.add_handler(convHandlerWeather)
+
+    dp.add_handler(getConvHandlerWeather())
 
     # TODO: get the conversationhandler here
     dp.add_handler(getConvHandlerBike())
