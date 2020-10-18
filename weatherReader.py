@@ -3,6 +3,19 @@ import os.path
 import time
 import requests
 import urllib.parse
+import datetime
+import pytz
+from tzwhere import tzwhere
+
+def getTimeLatLon(coord):
+    tzwhere = tzwhere.tzwhere()
+    timezone_str = tzwhere.tzNameAt(coord["lat"], coord["lon"])
+
+    dt = datetime.datetime.now(pytz.timezone(timezone_str))
+    time = dt.strftime("%H:%M")
+
+    coord["time"] = time
+    return coord
 
 
 def returnWeatherInfo(requestData):
@@ -10,6 +23,7 @@ def returnWeatherInfo(requestData):
     if "coord" in requestData:
         coord = requestData["coord"]
         coord = findLocCoord(coord)
+        coord = getTimeLatLon(coord)
     elif "address" in requestData:
         coord = findLatLon(requestData["address"])
         if coord == -1:
@@ -20,7 +34,7 @@ def returnWeatherInfo(requestData):
 
     if 0 <= errorCode:
         weatherData, updateVal = checkNewData(coord)
-        return [weatherData, coord["loc"], errorCode]
+        return [weatherData, coord, errorCode]
     else:
         return [0, "", errorCode]
 
@@ -44,6 +58,7 @@ def findLatLon(address):
             "lon": lon,
             "loc": loc
         }
+        coord = getTimeLatLon(coord)
         return coord
     else:
         return -1

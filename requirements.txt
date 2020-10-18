@@ -4,3 +4,5 @@ urllib3
 matplotlib
 pickle-mixin
 telepot
+pytz
+tzwhere

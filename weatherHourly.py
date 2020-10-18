@@ -8,24 +8,27 @@ def hourly(minData):
     returnStr = evalMinutely(minutely)
     hour, min = map(int, time.strftime("%H %M").split())
     fileName = "min_" + str(hour) + "_" + str(min)
-    plotMinutelyPrec(minutely, fileName)
+    plotHourlyPrec(hourly, fileName)
     return fileName, returnStr
 
 
-def plotHourlyPrec(minutely, fileName):
-    dt = minutely[0]
-    prec = minutely[1]
+def plotHourlyPrec(hourly, fileName, plotTitle):
+    dt = hourly["dt"]
+    prec = hourly["prec"]
+    temp = hourly["temp"]
+    feels_like = hourly["feels_like"]
     dt_zero = [t - dt[0] for t in dt]
-    minutes = [t / 60 for t in dt_zero]
+    hours = [t / 1200 for t in dt_zero]
 
     fig = plt.figure()
 
-    plt.plot(minutes, prec)
+    plt.plot(hours, prec)
     plt.fill_between(minutes, prec)
 
     plt.yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
     if max(prec) < 10:
         plt.ylim(0, 10)
+    plt.title("Wetter in " + plotTitle)
 
     plt.show(block=False)
     print(max(prec))

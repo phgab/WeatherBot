@@ -3,12 +3,12 @@ import time
 
 
 
-def minutely(minData,loc):
+def minutely(minData,plotTitle):
     minutely = getMinutely(minData)
     returnStr = evalMinutely(minutely)
     hour, min = map(int, time.strftime("%H %M").split())
     fileName = "min_" + str(hour) + "_" + str(min)
-    plotMinutelyPrec(minutely, fileName, loc)
+    plotMinutelyPrec(minutely, fileName, plotTitle)
     return fileName, returnStr
 
 
