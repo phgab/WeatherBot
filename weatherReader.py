@@ -3,27 +3,6 @@ import os.path
 import time
 import requests
 import urllib.parse
-import datetime
-import pytz
-
-def getTimeLatLon(coord):
-    url = 'https://api.geonames.org/timezoneJSON?formatted=true&lat={}&lng={}&username=gbweatherbot'.format(
-        coord["lat"], coord["lon"])
-    # tzWhere = tzwhere.tzwhere()
-    # timezone_str = tzWhere.tzNameAt(float(coord["lat"]), float(coord["lon"]))
-    #
-    # dt = datetime.datetime.now(pytz.timezone(timezone_str))
-    # time = dt.strftime("%H:%M")
-
-    response = requests.get(url).json()
-    if "time" in response[0]:
-        timeStr = response["time"]
-        time = timeStr[-5:]
-    else:
-        time = "??:??"
-
-    coord["time"] = time
-    return coord
 
 
 def returnWeatherInfo(requestData):
@@ -32,6 +11,7 @@ def returnWeatherInfo(requestData):
         coord = requestData["coord"]
         coord = findLocCoord(coord)
         coord = getTimeLatLon(coord)
+        coord = getPlace(coord)
     elif "address" in requestData:
         coord = findLatLon(requestData["address"])
         if coord == -1:
@@ -45,6 +25,47 @@ def returnWeatherInfo(requestData):
         return [weatherData, coord, errorCode]
     else:
         return [0, "", errorCode]
+
+
+def getTimeLatLon(coord):
+    url = 'http://api.geonames.org/timezoneJSON?formatted=true&lat={}&lng={}&username=gbweatherbot'.format(
+        coord["lat"], coord["lon"])
+    # tzWhere = tzwhere.tzwhere()
+    # timezone_str = tzWhere.tzNameAt(float(coord["lat"]), float(coord["lon"]))
+    #
+    # dt = datetime.datetime.now(pytz.timezone(timezone_str))
+    # time = dt.strftime("%H:%M")
+
+    response = requests.get(url).json()
+    if "time" in response:
+        timeStr = response["time"]
+        time = timeStr[-5:]
+    else:
+        time = "??:??"
+
+    coord["time"] = time
+    return coord
+
+def getPlace(coord):
+    url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat={}&lon={}'.format(
+        coord["lat"], coord["lon"])
+
+    response = requests.get(url).json()
+    if "address" in response:
+        address = response["address"]
+        if "city_district" in address:
+            place = address["city_district"]
+        elif "town" in address:
+            place = address["town"]
+        elif "county" in address:
+            place = address["county"]
+        else:
+            place = "No matching address field"
+    else:
+        place = "No location found"
+
+    coord["place"] = place
+    return coord
 
 
 def findLatLon(address):
@@ -67,6 +88,7 @@ def findLatLon(address):
             "loc": loc
         }
         coord = getTimeLatLon(coord)
+        coord = getPlace(coord)
         return coord
     else:
         return -1
