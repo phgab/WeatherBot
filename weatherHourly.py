@@ -3,37 +3,48 @@ import time
 
 
 
-def hourly(minData):
-    minutely = getMinutely(minData)
-    returnStr = evalMinutely(minutely)
+def hourly(hrlyData, plotTitle):
+    hourly = getHourly(hrlyData)
+    #returnStr = evalourly(hourly)
     hour, min = map(int, time.strftime("%H %M").split())
     fileName = "min_" + str(hour) + "_" + str(min)
-    plotHourlyPrec(hourly, fileName)
-    return fileName, returnStr
+    plotHourlyPrec(hourly, fileName, plotTitle)
+    return fileName, ""
 
 
 def plotHourlyPrec(hourly, fileName, plotTitle):
     dt = hourly["dt"]
-    prec = hourly["prec"]
     temp = hourly["temp"]
     feels_like = hourly["feels_like"]
     dt_zero = [t - dt[0] for t in dt]
-    hours = [t / 1200 for t in dt_zero]
+    hours = [t / 3600 for t in dt_zero]
+    # TODO: Add real time for x axis
 
     fig = plt.figure()
 
-    plt.plot(hours, prec)
-    plt.fill_between(minutes, prec)
+    if "prec" in hourly:
+        prec = hourly["prec"]
+        ax = plt.gca()
+        ax2 = ax.twinx()
 
-    plt.yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
-    if max(prec) < 10:
-        plt.ylim(0, 10)
+        ax.plot(hours, prec)
+        ax.fill_between(hours, prec)
+        ax.set_yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
+        if max(prec) < 10:
+            ax.set_ylim(0, 10)
+    else:
+        ax2 = plt.gca()
+
+    ax2.plot(hours, temp)
+    ax2.plot(hours, feels_like)
+    ax2.legend(["Temperatur", "Gefühlt wie"])
+
     plt.title("Wetter in " + plotTitle)
 
     plt.show(block=False)
-    print(max(prec))
+    #print(max(prec))
 
-    plt.savefig(fileName + ".jpg")
+    #plt.savefig(fileName + ".jpg")
     # Image.open(fileName + ".png").save(fileName + '.jpg', 'JPEG')
     plt.close()
 
@@ -125,13 +136,18 @@ def evalHourly(minutely):
 
 
 def getHourly(hrlData):
-    # requires ["minutely"] key from base data set
+    # requires ["hourly"] key from base data set
     dt = [d["dt"] for d in hrlData]
-    prec = [d["precipitation"] for d in hrlData]
     temp = [d["temp"] for d in hrlData]
     feels_like = [d["feels_like"] for d in hrlData]
-    hourly = {"dt": dt,
-              "precipitation": prec,
-              "temp": temp,
-              "feels_like": feels_like}
+    if "precipitation" in hrlData:
+        prec = [d["precipitation"] for d in hrlData]
+        hourly = {"dt": dt,
+                  "precipitation": prec,
+                  "temp": temp,
+                  "feels_like": feels_like}
+    else:
+        hourly = {"dt": dt,
+                  "temp": temp,
+                  "feels_like": feels_like}
     return hourly
