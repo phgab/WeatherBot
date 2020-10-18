@@ -8,8 +8,8 @@ import pytz
 from tzwhere import tzwhere
 
 def getTimeLatLon(coord):
-    tzwhere = tzwhere.tzwhere()
-    timezone_str = tzwhere.tzNameAt(coord["lat"], coord["lon"])
+    tzWhere = tzwhere.tzwhere()
+    timezone_str = tzWhere.tzNameAt(coord["lat"], coord["lon"])
 
     dt = datetime.datetime.now(pytz.timezone(timezone_str))
     time = dt.strftime("%H:%M")
