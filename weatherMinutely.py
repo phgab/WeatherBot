@@ -119,7 +119,7 @@ def evalMinutely(minutely):
                 bikeStr += "in " + str(indices[minRecommended[idx][0]]) + \
                              " - " + str(indices[minRecommended[idx][1]]) + " Minuten"
     print(bikeStr)
-    return rainStr, bikeStr
+    return [rainStr, bikeStr]
 
 
 def getMinutely(minData):
