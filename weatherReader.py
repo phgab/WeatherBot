@@ -9,7 +9,7 @@ from tzwhere import tzwhere
 
 def getTimeLatLon(coord):
     tzWhere = tzwhere.tzwhere()
-    timezone_str = tzWhere.tzNameAt(coord["lat"], coord["lon"])
+    timezone_str = tzWhere.tzNameAt(float(coord["lat"]), float(coord["lon"]))
 
     dt = datetime.datetime.now(pytz.timezone(timezone_str))
     time = dt.strftime("%H:%M")
