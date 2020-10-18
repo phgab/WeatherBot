@@ -33,7 +33,12 @@ def findLatLon(address):
     if "lat" in response[0]:
         lat = response[0]["lat"]
         lon = response[0]["lon"]
-        loc = response[0]["display_name"]
+        display_name = response[0]["display_name"]
+        display_name_s = display_name.split(", ")
+        if 3 < len(display_name_s):
+            loc = display_name_s[3]
+        else:
+            loc = display_name
         coord = {
             "lat": lat,
             "lon": lon,
@@ -51,7 +56,12 @@ def findLocCoord(coord):
 
     response = requests.get(url).json()
     if "lat" in response[0]:
-        loc = response[0]["display_name"]
+        display_name = response[0]["display_name"]
+        display_name_s = display_name.split(", ")
+        if 3 < len(display_name_s):
+            loc = display_name_s[3]
+        else:
+            loc = display_name
         coord["loc"] = loc
     else:
         coord["loc"] = "No location found"
