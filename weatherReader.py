@@ -53,7 +53,9 @@ def getPlace(coord):
     response = requests.get(url).json()
     if "address" in response:
         address = response["address"]
-        if "city_district" in address:
+        if "suburb" in address:
+            place = address["suburb"]
+        elif "city_district" in address:
             place = address["city_district"]
         elif "town" in address:
             place = address["town"]
