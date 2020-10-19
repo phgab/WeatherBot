@@ -45,7 +45,7 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
     plt.show(block=False)
     #print(max(prec))
 
-    #plt.savefig(fileName + ".jpg")
+    plt.savefig(fileName + ".jpg")
     # Image.open(fileName + ".png").save(fileName + '.jpg', 'JPEG')
     plt.close()
 
