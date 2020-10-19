@@ -26,7 +26,8 @@ def plotMinutelyPrec(minutely, fileName, plotTitle):
     plt.yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
     if max(prec) < 10:
         plt.ylim(0, 10)
-    plt.title("Wetter in " + plotTitle)
+    plt.title("Regen in " + plotTitle)
+    plt.xlabel("Zeit [min]")
 
     plt.show(block=False)
     print(max(prec))

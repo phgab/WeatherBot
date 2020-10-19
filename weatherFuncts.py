@@ -12,4 +12,12 @@ def returnMinutely(requestData):
     else:
         return "", "", errorCode
 
-# TODO: create new bot and pull the old testbot files from repo
+def returnHourly(requestData):
+    weatherData, coord, errorCode = returnWeatherInfo(requestData)
+    if 0 <= errorCode:
+        plotTitle = coord["place"] + ", " + coord["time"]
+        fileName, returnStr = hourly(weatherData["hourly"], plotTitle)
+        return returnStr, fileName, errorCode
+    else:
+        return "", "", errorCode
+

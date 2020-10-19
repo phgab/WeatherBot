@@ -38,8 +38,9 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
     ax2.plot(hours, temp)
     ax2.plot(hours, feels_like)
     ax2.legend(["Temperatur", "Gefühlt wie"])
+    ax2.set_xlabel("Zeit [h]")
 
-    plt.title("Wetter in " + plotTitle)
+    plt.title("Temperatur in " + plotTitle)
 
     plt.show(block=False)
     #print(max(prec))
