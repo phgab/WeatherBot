@@ -7,7 +7,7 @@ def hourly(hrlyData, plotTitle):
     hourly = getHourly(hrlyData)
     #returnStr = evalourly(hourly)
     hour, min = map(int, time.strftime("%H %M").split())
-    fileName = "min_" + str(hour) + "_" + str(min)
+    fileName = "hrl_" + str(hour) + "_" + str(min)
     plotHourlyPrec(hourly, fileName, plotTitle)
     return fileName, ""
 
