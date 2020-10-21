@@ -150,7 +150,6 @@ def evalHourly(minutely):
 def getHourly(hrlData):
     # requires ["hourly"] key from base data set
     dt = [d["dt"] for d in hrlData]
-    #dt = [d["dt"] + hrlData["timezone_offset"] for d in hrlData]
     temp = [d["temp"] for d in hrlData]
     feels_like = [d["feels_like"] for d in hrlData]
     if "precipitation" in hrlData:
