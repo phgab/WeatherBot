@@ -135,8 +135,8 @@ def evalMinutely(minutely):
 
 def getMinutely(minData):
     # requires ["minutely"] key from base data set
-    dt = [d["dt"] for d in minData]
-    #dt = [d["dt"] + minData["timezone_offset"] for d in minData]
+    #dt = [d["dt"] for d in minData]
+    dt = [d["dt"] + minData["timezone_offset"] for d in minData]
     prec = [d["precipitation"] for d in minData]
     minutely = [dt, prec]
     return minutely
