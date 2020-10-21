@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import time
+from datetime import datetime
 
 
 
@@ -18,6 +19,13 @@ def plotMinutelyPrec(minutely, fileName, plotTitle):
     dt_zero = [t - dt[0] for t in dt]
     minutes = [t / 60 for t in dt_zero]
 
+    dt_text = [datetime.fromtimestamp(t).strftime("%H:%M") for t in dt]
+
+    dt_labelText = [dt_text[idx] for idx in range(0, 70, 10)]
+    dt_labelText.append("")
+    dt_labelTicks = [dt_zero[idx] for idx in range(0, 70, 10)]
+    dt_labelTicks.append(70)
+
     fig = plt.figure()
 
     plt.plot(minutes, prec)
@@ -28,6 +36,8 @@ def plotMinutelyPrec(minutely, fileName, plotTitle):
         plt.ylim(0, 10)
     plt.title("Regen in " + plotTitle)
     plt.xlabel("Zeit [min]")
+
+    plt.xticks(dt_labelTicks, dt_labelText)
 
     plt.show(block=False)
     print(max(prec))
@@ -125,7 +135,8 @@ def evalMinutely(minutely):
 
 def getMinutely(minData):
     # requires ["minutely"] key from base data set
-    dt = [d["dt"] for d in minData]
+    #dt = [d["dt"] for d in minData]
+    dt = [d["dt"] + minData["timezone_offset"] for d in minData]
     prec = [d["precipitation"] for d in minData]
     minutely = [dt, prec]
     return minutely

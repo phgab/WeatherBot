@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import time
-
+from datetime import datetime
 
 
 def hourly(hrlyData, plotTitle):
@@ -19,6 +19,14 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
     dt_zero = [t - dt[0] for t in dt]
     hours = [t / 3600 for t in dt_zero]
     # TODO: Add real time for x axis
+
+    dt_text = [datetime.fromtimestamp(t).strftime("%H:%M") for t in dt]
+
+    dt_labelText = [dt_text[idx] for idx in range(0, 48, 8)]
+    dt_labelText.append("")
+    dt_labelTicks = [hours[idx] for idx in range(0, 48, 8)]
+    dt_labelTicks.append(48)
+
 
     fig = plt.figure()
 
@@ -41,6 +49,9 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
     ax2.set_xlabel("Zeit [h]")
 
     plt.title("Temperatur in " + plotTitle)
+
+    ax2.set_xticks(dt_labelTicks)
+    ax2.set_xticklabels(dt_labelText)
 
     plt.show(block=False)
     #print(max(prec))
@@ -139,6 +150,7 @@ def evalHourly(minutely):
 def getHourly(hrlData):
     # requires ["hourly"] key from base data set
     dt = [d["dt"] for d in hrlData]
+    #dt = [d["dt"] + hrlData["timezone_offset"] for d in hrlData]
     temp = [d["temp"] for d in hrlData]
     feels_like = [d["feels_like"] for d in hrlData]
     if "precipitation" in hrlData:
