@@ -157,8 +157,8 @@ def getNewData(coord):
     response = requests.get(complete_url)
     data = response.json()
 
-    #data["minutely"]["timezone_offset"] = data["timezone_offset"]
-    #data["hourly"]["timezone_offset"] = data["timezone_offset"]
+    data["minutely"]["timezone_offset"] = data["timezone_offset"]
+    data["hourly"]["timezone_offset"] = data["timezone_offset"]
 
     tNow = int(time.time())
     data["tLast"] = tNow
