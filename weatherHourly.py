@@ -22,33 +22,37 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
 
     dt_text = [datetime.fromtimestamp(t).strftime("%H:%M") for t in dt]
 
-    dt_labelText = [dt_text[idx] for idx in range(0, 48, 8)]
-    dt_labelText.append("")
-    dt_labelTicks = [hours[idx] for idx in range(0, 48, 8)]
-    dt_labelTicks.append(48)
-
+    dt_labelText = [dt_text[idx] for idx in range(0, 25, 6)] #  Alternativ: 0,48,8
+    #dt_labelText.append("")
+    dt_labelTicks = [hours[idx] for idx in range(0, 25, 6)]
+    #dt_labelTicks.append(48)
 
     fig = plt.figure()
 
-    if "prec" in hourly:
-        prec = hourly["prec"]
+    if any([r!=0 for r in hourly["rain"]]):
+        rain = hourly["rain"]
         ax = plt.gca()
         ax2 = ax.twinx()
 
-        ax.plot(hours, prec)
-        ax.fill_between(hours, prec)
-        ax.set_yticks([0.3, 2, 7], ["leicht", "mittel", "stark"])
-        if max(prec) < 10:
+        ax.bar(hours[0:24], rain[0:24], label = "Regen")
+        #ax.fill_between(hours, prec)
+        ax.set_yticks([0.3, 2, 7])
+        ax.set_yticklabels(["leicht", "mittel", "stark"])
+        ax.set_ylabel("Niederschlag")
+        if max(rain) < 10:
             ax.set_ylim(0, 10)
     else:
         ax2 = plt.gca()
 
-    ax2.plot(hours, temp)
-    ax2.plot(hours, feels_like)
-    ax2.legend(["Temperatur", "Gefühlt wie"])
+    ax2.plot(hours[0:24], temp[0:24],'r', label = "Temperatur")
+    ax2.plot(hours[0:24], feels_like[0:24],'g', label = "Gefühlt wie")
+    fig.legend(loc="upper right")
     ax2.set_xlabel("Zeit [h]")
+    ax2.set_ylabel("Temperatur [" + chr(176) + "C]")
+    minT, maxT = ax2.get_ylim()
+    ax2.set_ylim(min(0, minT), maxT)
 
-    plt.title("Temperatur in " + plotTitle)
+    plt.title("Wetter in " + plotTitle)
 
     ax2.set_xticks(dt_labelTicks)
     ax2.set_xticklabels(dt_labelText)
@@ -152,14 +156,9 @@ def getHourly(hrlData):
     dt = [d["dt"] for d in hrlData]
     temp = [d["temp"] for d in hrlData]
     feels_like = [d["feels_like"] for d in hrlData]
-    if "precipitation" in hrlData:
-        prec = [d["precipitation"] for d in hrlData]
-        hourly = {"dt": dt,
-                  "precipitation": prec,
-                  "temp": temp,
-                  "feels_like": feels_like}
-    else:
-        hourly = {"dt": dt,
-                  "temp": temp,
-                  "feels_like": feels_like}
+    rain = [h["rain"]["1h"] if "rain" in h else 0 for h in hrlData]
+    hourly = {"dt": dt,
+              "temp": temp,
+              "feels_like": feels_like,
+              "rain": rain}
     return hourly
