@@ -20,7 +20,7 @@ def main():
     # returnStr = evalMinutely(minutely)
     # plotMinutelyPrec(minutely, fileName)
 
-    #bot.sendPhoto(532298931, imgUrl)
+    bot.sendPhoto(532298931, imgUrl)
     bot.sendMessage(532298931, "lillifee sent")
 
 
