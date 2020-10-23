@@ -11,16 +11,8 @@ def main():
 
     imgUrl = get_img("Lillifee")
 
-
-    # fileName = "minutelyRain"
-    # address = "Kriegerstrasse 22, 30161 Hannover"
-    # coord = findLatLon(address)
-    # data = checkNewData(coord)
-    # minutely = getMinutely(data["minutely"])
-    # returnStr = evalMinutely(minutely)
-    # plotMinutelyPrec(minutely, fileName)
-
-    bot.sendPhoto(532298931, imgUrl)
+    bot.sendPhoto(1360677999, imgUrl)
+    bot.sendMessage(1360677999, "Ihre tägliche Dosis Lillifee")
     bot.sendMessage(532298931, "lillifee sent")
 
 
