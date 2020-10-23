@@ -37,11 +37,11 @@ def get_img(query):
         turl = m["turl"]
 
         image_name = urllib.parse.urlsplit(murl).path.split("/")[-1]
-        print(image_name)
+        #print(image_name)
 
         ActualImages.append((image_name, turl, murl))
 
-    print("there are total" , len(ActualImages),"images")
+    #print("there are total" , len(ActualImages),"images")
 
     imgID = random.randint(0,len(ActualImages))
     imgUrl = ActualImages[imgID][2]
