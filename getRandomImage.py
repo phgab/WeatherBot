@@ -16,11 +16,11 @@ def get_soup(url,header):
         urllib.request.Request(url,headers=header)),
         'html.parser')
 
-def test(query):
+def get_img(query):
     #query = sys.argv[1]
     query= query.split()
     query='+'.join(query)
-    url="http://www.bing.com/images/search?q=" + query + "&FORM=HDRSC2"
+    url="http://www.bing.com/images/search?q=" + query + "&FORM=HDRSC2&count=50"
 
     #add the directory for your image here
     DIR="Pictures"

@@ -23,7 +23,7 @@ def plotMinutelyPrec(minutely, fileName, plotTitle):
 
     dt_labelText = [dt_text[idx] for idx in range(0, 70, 10)]
     dt_labelText.append("")
-    dt_labelTicks = [dt_zero[idx] for idx in range(0, 70, 10)]
+    dt_labelTicks = [minutes[idx] for idx in range(0, 70, 10)]
     dt_labelTicks.append(70)
 
     fig = plt.figure()
@@ -36,6 +36,7 @@ def plotMinutelyPrec(minutely, fileName, plotTitle):
         plt.ylim(0, 10)
     plt.title("Regen in " + plotTitle)
     plt.xlabel("Zeit [min]")
+    plt.ylabel("Niederschlag")
 
     plt.xticks(dt_labelTicks, dt_labelText)
 
