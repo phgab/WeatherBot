@@ -12,8 +12,8 @@ def main():
     _, fileNameHrl, errorCode2 = returnHourly({"address": "Kriegerstrasse 22, Hannover"})
     returnStr = rainStr + "\n" + bikeStr
 
-    bot.send_photo(532298931, open(fileNameHrl + ".jpg", 'rb'))
-    bot.send_photo(532298931, open(fileNameMin + ".jpg", 'rb'))
+    bot.sendPhoto(532298931, open(fileNameHrl + ".jpg", 'rb'))
+    bot.sendPhoto(532298931, open(fileNameMin + ".jpg", 'rb'))
     bot.sendMessage(532298931,returnStr)
 
 

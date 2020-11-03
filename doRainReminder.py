@@ -10,7 +10,7 @@ def main():
 
     [rainStr, bikeStr], fileName, errorCode = returnMinutely({"address": "Kriegerstrasse 22, Hannover"})
     returnStr = rainStr + "\n" + bikeStr
-    bot.send_photo(532298931, open(fileName + ".jpg", 'rb'))
+    bot.sendPhoto(532298931, open(fileName + ".jpg", 'rb'))
     bot.sendMessage(532298931, returnStr)
 
 
