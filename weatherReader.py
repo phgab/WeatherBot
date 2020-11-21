@@ -125,9 +125,10 @@ def checkNewData(coord):
         data = pickle.load(open("weatherData", "rb"))
         tNow = int(time.time())
         tLast = data["tLast"]
-        if 60*5 < (tNow - tLast):  # only get new data every 5 mins
+        if 60*5 < (tNow - tLast) or data['lat'] != coord['lat'] or\
+            data['lon'] != coord['lon']:  # only get new data every 5 mins or if new data arrives
             returnVal = 2
-            print("10 minutes have passed, new data is acquired")
+            print("new data is acquired")
             data = getNewData(coord)
             pickle.dump(data, open("weatherData", "wb"))
         if False:
@@ -139,6 +140,7 @@ def checkNewData(coord):
 
     else:
         data = getNewData(coord)
+        print("old data used")
         pickle.dump(data, open("weatherData", "wb"))
     return [data, returnVal]
 
