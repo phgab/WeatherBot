@@ -24,7 +24,7 @@ def evalAlerts(alerts):
 
         numAlerts += 1
 
-        alertStr += "Alert " + numAlerts + ": "
+        alertStr += "Alert " + str(numAlerts) + ": "
         alertStr += event + " (" + startText + " - " + endText + ", " + sender_name + ")\n"
         alertStr += description
 
