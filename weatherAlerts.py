@@ -14,7 +14,7 @@ def alerts(alertData):
 def evalAlerts(alerts):
     numAlerts = 0
     alertStr = ""
-    for event in alerts["events"]:
+    for event in alerts["event"]:
         if 0 < numAlerts:
             alertStr += "\n"
         startText = datetime.fromtimestamp(alerts["start"][numAlerts]).strftime("%H:%M")
