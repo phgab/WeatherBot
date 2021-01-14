@@ -1,7 +1,7 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler
-from weatherFuncts import returnMinutely, returnHourly
+from weatherFuncts import returnMinutelyHourly
 
 FIRST, SECOND, THIRD = range(3)
 ENTERLOC, FIXEDLOC, USERLOC = range(3)
@@ -71,12 +71,10 @@ def readLoc(update, context):
     lon = user_location.longitude
     coord = {"lat": lat, "lon": lon}
 
-    [rainStr, bikeStr], fileNameMin, errorCode1 = returnMinutely({"coord": coord})
-    _, fileNameHrl, errorCode2 = returnHourly({"coord": coord})
-    if errorCode1 == -2 or errorCode2 == -2:
+    returnStr, [fileNameMin, fileNameHrl], errorCode = returnMinutelyHourly({"coord": coord})
+    if errorCode == -2:
         bot.sendMessage(update.message.chat.id, "Keine Koordinaten übermittelt")
     else:
-        returnStr = rainStr
         bot.send_photo(update.message.chat.id, open(fileNameHrl + ".jpg", 'rb'))
         bot.send_photo(update.message.chat.id, open(fileNameMin + ".jpg", 'rb'))
         update.message.reply_text(returnStr)
@@ -88,14 +86,12 @@ def readAddress(update, context):
     address = update.message.text
     update.message.reply_text(address)
 
-    [rainStr, bikeStr], fileNameMin, errorCode1 = returnMinutely({"address": address})
-    _, fileNameHrl, errorCode2 = returnHourly({"address": address})
-    if errorCode1 == -2 or errorCode2 == -2:
+    returnStr, [fileNameMin, fileNameHrl], errorCode = returnMinutelyHourly({"address": address})
+    if errorCode == -2:
         bot.sendMessage(update.message.chat.id, "Keine Adresse übermittelt")
-    elif errorCode1 == -1 or errorCode2 == -1:
+    elif errorCode == -1:
         bot.sendMessage(update.message.chat.id, "Adresse konnte nicht gefunden werden")
     else:
-        returnStr = rainStr
         bot.send_photo(update.message.chat.id, open(fileNameHrl + ".jpg", 'rb'))
         bot.send_photo(update.message.chat.id, open(fileNameMin + ".jpg", 'rb'))
         update.message.reply_text(returnStr)
@@ -110,14 +106,12 @@ def evalSelectedAddress(update, context):
     adID = int(qData)
     address = fixedAdr[adID][0] + fixedAdr[adID][1]
 
-    [rainStr, bikeStr], fileNameMin, errorCode1 = returnMinutely({"address": address})
-    _, fileNameHrl, errorCode2 = returnHourly({"address": address})
-    if errorCode1 == -2 or errorCode2 == -2:
+    returnStr, [fileNameMin, fileNameHrl], errorCode = returnMinutelyHourly({"address": address})
+    if errorCode == -2:
         bot.sendMessage(query.message.chat.id, "Keine Adresse übermittelt")
-    elif errorCode1 == -1 or errorCode2 == -1:
+    elif errorCode == -1:
         bot.sendMessage(query.message.chat.id, "Adresse konnte nicht gefunden werden")
     else:
-        returnStr = rainStr
         bot.send_photo(query.message.chat.id, open(fileNameHrl + ".jpg", 'rb'))
         bot.send_photo(query.message.chat.id, open(fileNameMin + ".jpg", 'rb'))
         bot.sendMessage(query.message.chat.id, returnStr)

@@ -24,13 +24,13 @@ def bikeEval(update, context):
     elif adID == 2:
         address = 'Stadtfelddamm 34, 30625 Hannover'
 
-    [rainStr, bikeStr], fileName, errorCode = returnMinutely({"address": address})
+    returnStr, fileName, errorCode = returnMinutely({"address": address})
+
     if errorCode == -2:
         bot.sendMessage(query.message.chat.id, "Keine Adresse übermittelt")
     elif errorCode == -1:
         bot.sendMessage(query.message.chat.id, "Adresse konnte nicht gefunden werden")
     else:
-        returnStr = rainStr + "\n" + bikeStr
         bot.send_photo(query.message.chat.id, open(fileName + ".jpg", 'rb'))
         bot.sendMessage(query.message.chat.id, returnStr)
     return ConversationHandler.END

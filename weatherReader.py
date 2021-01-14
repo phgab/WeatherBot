@@ -167,6 +167,11 @@ def getNewData(coord):
     for hrlD in data["hourly"]:
         hrlD["dt"] += dTime
 
+    if "alerts" in data:
+        for alert in data["alerts"]:
+            alert["start"] += dTime
+            alert["end"] += dTime
+
     tNow = int(time.time())
     data["tLast"] = tNow
     return data
