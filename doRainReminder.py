@@ -8,8 +8,7 @@ TOKEN = os.environ["TELTOKEN"]
 def main():
     bot = telepot.Bot(TOKEN)
 
-    [rainStr, bikeStr], fileName, errorCode = returnMinutely({"address": "Kriegerstrasse 22, Hannover"})
-    returnStr = rainStr + "\n" + bikeStr
+    returnStr, fileName, errorCode = returnMinutely({"address": "Kriegerstrasse 22, Hannover"})
     bot.sendPhoto(532298931, open(fileName + ".jpg", 'rb'))
     bot.sendMessage(532298931, returnStr)
 
