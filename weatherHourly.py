@@ -35,9 +35,9 @@ def plotHourlyPrec(hourly, fileName, plotTitle):
         snow = hourly["snow"]
         ax = plt.gca()
         ax2 = ax.twinx()
-        if any([r != 0 for r in hourly["rain"]]):
+        if any([r != 0 for r in rain[0:24]]):
             ax.bar(hours[0:24], rain[0:24], label="Regen")
-        if any([s != 0 for s in hourly["snow"]]):
+        if any([s != 0 for s in snow[0:24]]):
             ax.bar(hours[0:24], snow[0:24], color="darkgray", label="Schnee")
         #ax.fill_between(hours, prec)
         ax.set_yticks([0.3, 2, 7])
@@ -74,13 +74,15 @@ def evalHourly(hourly):
     minStr = ""
     if any([s != 0 for s in snow[0:2]]):
         minStr = "Es wird voraussichtlich schneien."
-        hrlStr = "Schnee in den nächsten 2h."
+        hrlStr = "Schnee in den nächsten 2 h."
     elif any([s != 0 for s in snow[0:4]]):
-        hrlStr = "Schnee in den nächsten 4h."
+        hrlStr = "Schnee in den nächsten 4 h."
     elif any([s != 0 for s in snow[0:8]]):
-        hrlStr = "Schnee in den nächsten 8h."
+        hrlStr = "Schnee in den nächsten 8 h."
+    elif any([s != 0 for s in snow[0:24]]):
+        hrlStr = "Schnee in den nächsten 24 h."
     elif any([s != 0 for s in snow]):
-        hrlStr = "Schnee in den nächsten 24h."
+        hrlStr = "Schnee in den nächsten 48 h."
     else:
         hrlStr = ""
     return [minStr, hrlStr]
