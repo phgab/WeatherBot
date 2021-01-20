@@ -161,8 +161,15 @@ def getNewData(coord):
 
     dTime = data["timezone_offset"]
 
-    for minD in data["minutely"]:
-        minD["dt"] += dTime
+    if "minutely" in data:
+        for minD in data["minutely"]:
+            minD["dt"] += dTime
+    else:
+        minDat = [{'dt': data["hourly"][0]["dt"], 'precipitation': 0}] * 61
+        data["minutely"] = minDat
+        for idx in range(0, len(data["minutely"])):
+            data["minutely"][idx]["dt"] += dTime + (idx * 60)
+
 
     for hrlD in data["hourly"]:
         hrlD["dt"] += dTime
