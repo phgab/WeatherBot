@@ -47,6 +47,7 @@ def main():
     # updater.bot.setWebhook('https://gbweatherbot.herokuapp.com/' + TOKEN)
     
     updater.bot.sendMessage(532298931,"Bot running")
+    print('test')
     
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
