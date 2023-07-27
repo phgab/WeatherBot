@@ -1,6 +1,7 @@
 from datetime import datetime
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, filters
 import os
+import json
 
 
 def addBotCommands(dp, log):
@@ -16,7 +17,7 @@ def addBotCommands(dp, log):
     dp.add_handler(CommandHandler("sendPickle", sendPickle))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(filters.TEXT, echo))
 
     # log all errors
     dp.add_error_handler(error)
@@ -24,42 +25,44 @@ def addBotCommands(dp, log):
     return dp
 
 
-def sendPickle(update, context):
+async def sendPickle(update, context):
     if os.path.isfile("weatherData"):
         bot = context.bot
-        bot.send_document(update.message.chat.id, open("weatherData", 'rb'))
-        update.message.reply_text("There you go")
+        await bot.send_document(update.message.chat.id, open("weatherData", 'rb'))
+        await update.message.reply_text("There you go")
     else:
-        update.message.reply_text("No file saved")
+        await update.message.reply_text("No file saved")
 
 
-def echo(update, context):
+async def echo(update, context):
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    await update.message.reply_text(update.message.text)
 
 
-def error(update, context):
+async def error(update, context):
     """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, context.error)
+    await logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
-def time(update, context):
+async def time(update, context):
     """Returns the time"""
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
-    update.message.reply_text(current_time)
+    #ENVIRONTEST
+    os.environ['TIMETEST'] = json.dumps(current_time)
+    await update.message.reply_text(current_time)
 
 
-def start(update, context):
+async def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    await update.message.reply_text('Hi!')
 
 
-def help(update, context):
+async def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    await update.message.reply_text('Help!')
 
 
-def chatID(update, context):
-    update.message.reply_text(update.message.chat.id)
+async def chatID(update, context):
+    await update.message.reply_text(update.message.chat.id)
 

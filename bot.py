@@ -1,58 +1,223 @@
-import logging
-from telegram.ext import Updater
+#todo: do editable storing of adresses depending on user (probably with json.dumps and json.loads
+
+import asyncio
 import os
+import html
+import logging
+from dataclasses import dataclass
+from http import HTTPStatus
+
+import uvicorn
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse, Response
+from starlette.routing import Route
+
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import (
+    Application,
+    CallbackContext,
+    CommandHandler,
+    ContextTypes,
+    ExtBot,
+    TypeHandler,
+)
+
 from convHandlerBike import getConvHandlerBike
 from convHandlerWeather import getConvHandlerWeather
 from stdBotCommands import addBotCommands
-
-PORT = int(os.environ.get('PORT', 5000))
+from weatherFuncts import returnMinutely, returnMinutelyHourly
 
 # Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+# set higher logging level for httpx to avoid all GET and POST requests being logged
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
-TOKEN = os.environ["TELTOKEN"]
 
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-#gb: test for heroku update
+APIKEY_TGBOT = os.environ['APIKEY_TGBOT']
+WEBHOOK_HOST = os.environ['WEBHOOK_HOST']
+ADMIN_CHAT_ID = os.environ['ADMIN_CHAT_ID']
 
-def main():
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
-    updater = Updater(TOKEN, use_context=True)
 
-    # Get the dispatcher to register handlers
-    dp = updater.dispatcher
+@dataclass
+class WebhookUpdate:
+    """Simple dataclass to wrap a custom update type"""
+    user_id: int
+    payload: str
 
+
+class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
+    """
+    Custom CallbackContext class that makes `user_data` available for updates of type
+    `WebhookUpdate`.
+    """
+
+    @classmethod
+    def from_update(
+        cls,
+        update: object,
+        application: "Application",
+    ) -> "CustomContext":
+        if isinstance(update, WebhookUpdate):
+            return cls(application=application, user_id=update.user_id)
+        return super().from_update(update, application)
+
+
+async def start(update: Update, context: CustomContext) -> None:
+    """Display a message with instructions on how to use this bot."""
+    url = context.bot_data["url"]
+    payload_url = html.escape(f"{url}/submitpayload?user_id=<your user id>&payload=<payload>")
+    text = (
+        f"To check if the bot is still running, call <code>{url}/healthcheck</code>.\n\n"
+        f"To post a custom update, call <code>{payload_url}</code>."
+    )
+    await update.message.reply_html(text=text)
+
+
+async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
+    """Callback that handles the custom updates."""
+    chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
+    payloads = context.user_data.setdefault("payloads", [])
+    payloads.append(update.payload)
+    combined_payloads = "</code>\n• <code>".join(payloads)
+    text = (
+        f"The user {chat_member.user.mention_html()} has sent a new payload. "
+        f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
+    )
+    await context.bot.send_message(
+        chat_id=context.bot_data["admin_chat_id"], text=text, parse_mode=ParseMode.HTML
+    )
+
+
+async def main() -> None:
+    """Set up the application and a custom webserver."""
+    url = WEBHOOK_HOST
+    admin_chat_id = ADMIN_CHAT_ID
+    port = 8000
+
+    context_types = ContextTypes(context=CustomContext)
+    # Here we set updater to None because we want our custom webhook server to handle the updates
+    # and hence we don't need an Updater instance
+    application = (
+        Application.builder().token(APIKEY_TGBOT).updater(None).context_types(context_types).build()
+    )
+    # save the values in `bot_data` such that we may easily access them in the callbacks
+    application.bot_data["url"] = url
+    application.bot_data["admin_chat_id"] = admin_chat_id
+
+    # register handlers
+    # application.add_handler(CommandHandler("start", start))
+    application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
 
     # Conversation handlers
-    dp.add_handler(getConvHandlerWeather())
-
-    dp.add_handler(getConvHandlerBike())
-
+    application.add_handler(getConvHandlerWeather())
+    application.add_handler(getConvHandlerBike())
 
     # Standard commands
-    dp = addBotCommands(dp, logger)
+    application = addBotCommands(application, logger)
+
+    # Pass webhook settings to telegram
+    await application.bot.set_webhook(url=f"{url}/telegram", allowed_updates=Update.ALL_TYPES)
+
+    # Set up webserver
+    async def telegram(request: Request) -> Response:
+        """Handle incoming Telegram updates by putting them into the `update_queue`"""
+        await application.update_queue.put(
+            Update.de_json(data=await request.json(), bot=application.bot)
+        )
+        return Response()
+
+    async def custom_updates(request: Request) -> PlainTextResponse:
+        """
+        Handle incoming webhook updates by also putting them into the `update_queue` if
+        the required parameters were passed correctly.
+        """
+        try:
+            user_id = int(request.query_params["user_id"])
+            payload = request.query_params["payload"]
+        except KeyError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="Please pass both `user_id` and `payload` as query parameters.",
+            )
+        except ValueError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="The `user_id` must be a string!",
+            )
+
+        await application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
+        return PlainTextResponse("Thank you for the submission! It's being forwarded.")
+
+    async def activateReminder(request: Request) -> PlainTextResponse:
+        """
+        Handle incoming webhook updates by also putting them into the `update_queue` if
+        the required parameters were passed correctly.
+        """
+        try:
+            chat_id = int(request.query_params["chat_id"])
+            reminderType = request.query_params["reminderType"]
+            road = request.query_params["road"]
+            housenr = request.query_params["housenr"]
+            city = request.query_params["city"]
+        except KeyError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="Please pass both `user_id` and `payload` as query parameters.",
+            )
+        except ValueError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="The `user_id` must be a string!",
+            )
+        bot = application.bot
+        if reminderType == "rain":
+            returnStr, fileName, errorCode = returnMinutely({"address": road + " " + housenr + ", " + city})
+            await bot.sendPhoto(chat_id, open(fileName + ".jpg", 'rb'))
+            await bot.sendMessage(chat_id, returnStr)
+        elif reminderType == "weather":
+            returnStr, [fileNameMin, fileNameHrl], errorCode = returnMinutelyHourly({"address": road + " " + housenr + ", " + city})
+
+            await bot.sendPhoto(chat_id, open(fileNameHrl + ".jpg", 'rb'))
+            await bot.sendPhoto(chat_id, open(fileNameMin + ".jpg", 'rb'))
+            await bot.sendMessage(chat_id, returnStr)
+        # await application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
+        return PlainTextResponse("Thank you for the submission! It's being forwarded.")
+
+    async def health(_: Request) -> PlainTextResponse:
+        """For the health endpoint, reply with a simple plain text message."""
+        return PlainTextResponse(content="The bot is still running fine :)")
+
+    starlette_app = Starlette(
+        routes=[
+            Route("/telegram", telegram, methods=["POST"]),
+            Route("/healthcheck", health, methods=["GET"]),
+            Route("/submitpayload", custom_updates, methods=["POST", "GET"]),
+            Route("/activatereminder", activateReminder, methods=["POST", "GET"]),
+        ]
+    )
+    webserver = uvicorn.Server(
+        config=uvicorn.Config(
+            app=starlette_app,
+            port=port,
+            use_colors=False,
+            # host="127.0.0.1",
+            host="0.0.0.0",
+        )
+    )
+
+    await application.bot.sendMessage(admin_chat_id, "Bot running")
+
+    # Run application and webserver together
+    async with application:
+        await application.start()
+        await webserver.serve()
+        await application.stop()
 
 
-    # Start the Bot
-    updater.start_webhook(listen="0.0.0.0",
-                          port=int(PORT),
-                          url_path=TOKEN)
-    updater.bot.setWebhook('https://fine-ruby-piglet-coat.cyclic.app/' + TOKEN)
-    # updater.bot.setWebhook('https://gbweatherbot.herokuapp.com/' + TOKEN)
-    
-    updater.bot.sendMessage(532298931,"Bot running")
-    print('test')
-    
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    asyncio.run(main())
